@@ -27,23 +27,24 @@ int main()
     // Oled_ShowHexNum(&oled, 1, 1, 0xAA55, 4);
     // Oled_ShowBinNum(&oled, 4, 1, 0xAA55, 16);
 
-    Oled_DrawBMP(&oled, 0, 0, 128, 64, OLED_BMP2);
+    // Oled_DrawBMP(&oled, 0, 0, 128, 16, OLED_BMP1);
+    Oled_DrawBMP(&oled, 0, 0, 128, 8, OLED_BMP2);
 
     while (1) {
         if (Key_IsPressed(&key, key1) == 1) {
             Led_Turn(&led, led1);
             if (Led_isOn(&led, led1) == 1) {
-                Oled_ShowString(&oled, 1, 5, "Das");
+                Oled_ShowString(&oled, 3, 10, "Das");
             } else {
-                Oled_ShowString(&oled, 1, 5, "   ");
+                Oled_ShowString(&oled, 3, 10, "   ");
             }
         }
         if (Key_IsPressed(&key, key2) == 1) {
             Led_Turn(&led, led2);
             if (Led_isOn(&led, led2) == 1) {
-                Oled_ShowString(&oled, 1, 1, "Aben");
+                Oled_ShowString(&oled, 3, 6, "Aben");
             } else {
-                Oled_ShowString(&oled, 1, 1, "    ");
+                Oled_ShowString(&oled, 3, 6, "    ");
             }
         }
     }

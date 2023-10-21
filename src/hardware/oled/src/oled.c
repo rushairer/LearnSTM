@@ -87,10 +87,10 @@ void Oled_WriteData(Oled *this, uint8_t Data)
  */
 void Oled_SetCursor(Oled *this, uint8_t X, uint8_t Y)
 {
+    Oled_WriteCommand(this, 0xB0 | Y); // 设置Y位置
+
     Oled_WriteCommand(this, 0x10 | ((X & 0xF0) >> 4)); // 设置X位置高4位
     Oled_WriteCommand(this, 0x00 | (X & 0x0F));        // 设置X位置低4位
-
-    Oled_WriteCommand(this, 0xB0 | Y); // 设置Y位置
 }
 
 void Oled_Init(
@@ -283,18 +283,11 @@ void Oled_ShowBinNum(Oled *this, uint8_t Line, uint8_t Column, uint32_t Number, 
 
 void Oled_DrawBMP(Oled *this, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[])
 {
-    uint8_t i = 0, x, y;
-    if (y1 % 8 == 0) {
-        y1 = y1 / 8;
-    } else {
-        y1 = y1 / 8 + 1;
-    }
-
+    uint16_t i = 0, x, y;
     for (y = y0; y < y1; y++) {
         Oled_SetCursor(this, x0, y);
         for (x = x0; x < x1; x++) {
-            Oled_WriteData(this, BMP[i]);
-            i++;
+            Oled_WriteData(this, BMP[i++]);
         }
     }
 }
