@@ -152,6 +152,8 @@ void Oled_Clear(Oled *this)
             Oled_WriteData(this, 0x00);
         }
     }
+
+    Oled_SetCursor(this, 0, 0);
 }
 
 /**
@@ -276,5 +278,23 @@ void Oled_ShowBinNum(Oled *this, uint8_t Line, uint8_t Column, uint32_t Number, 
     uint8_t i;
     for (i = 0; i < Length; i++) {
         Oled_ShowChar(this, Line, Column + i, Number / Oled_Pow(this, 2, Length - i - 1) % 2 + '0');
+    }
+}
+
+void Oled_DrawBMP(Oled *this, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[])
+{
+    uint8_t i = 0, x, y;
+    if (y1 % 8 == 0) {
+        y1 = y1 / 8;
+    } else {
+        y1 = y1 / 8 + 1;
+    }
+
+    for (y = y0; y < y1; y++) {
+        Oled_SetCursor(this, x0, y);
+        for (x = x0; x < x1; x++) {
+            Oled_WriteData(this, BMP[i]);
+            i++;
+        }
     }
 }

@@ -23,5 +23,6 @@ void Oled_ShowNum(Oled *this, uint8_t Line, uint8_t Column, uint32_t Number, uin
 void Oled_ShowSignedNum(Oled *this, uint8_t Line, uint8_t Column, int32_t Number, uint8_t Length);
 void Oled_ShowHexNum(Oled *this, uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length);
 void Oled_ShowBinNum(Oled *this, uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length);
+void Oled_DrawBMP(Oled *this, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[]);
 
 #endif // !__OLED_H
