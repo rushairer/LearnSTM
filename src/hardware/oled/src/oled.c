@@ -4,12 +4,12 @@
 
 void Oled_CallScl(Oled *this, BitAction BitVal)
 {
-    GPIO_WriteBit(this->gpio.GPIOx, this->GPIO_Scl_Pin, BitVal);
+    GPIO_WriteBit(this->GPIOx, this->GPIO_Scl_Pin, BitVal);
 }
 
 void Oled_CallSda(Oled *this, BitAction BitVal)
 {
-    GPIO_WriteBit(this->gpio.GPIOx, this->GPIO_Sda_Pin, BitVal);
+    GPIO_WriteBit(this->GPIOx, this->GPIO_Sda_Pin, BitVal);
 }
 
 void Oled_I2c_Init(
@@ -19,20 +19,24 @@ void Oled_I2c_Init(
     uint16_t GPIO_Scl_Pin,
     uint16_t GPIO_Sda_Pin)
 {
-    Delay_s(3);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph, ENABLE);
 
-    Gpio_Init(&this->gpio, RCC_APB2Periph, GPIOx, GPIO_Mode_Out_OD, GPIO_Scl_Pin | GPIO_Sda_Pin);
-    this->GPIO_Scl_Pin = GPIO_Scl_Pin;
-    this->GPIO_Sda_Pin = GPIO_Sda_Pin;
-
-    Oled_CallScl(this, Bit_SET);
-    Oled_CallSda(this, Bit_SET);
+    this->RCC_APB2Periph = RCC_APB2Periph;
+    this->GPIOx          = GPIOx;
+    this->GPIO_Scl_Pin   = GPIO_Scl_Pin;
+    this->GPIO_Sda_Pin   = GPIO_Sda_Pin;
+    GPIO_InitTypeDef GPIO_InitStructure;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Pin   = GPIO_Scl_Pin | GPIO_Sda_Pin;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOx, &GPIO_InitStructure);
+    GPIO_SetBits(GPIOx, GPIO_Scl_Pin | GPIO_Sda_Pin);
 }
 
 void Oled_I2c_Start(Oled *this)
 {
-    Oled_CallSda(this, Bit_SET);
     Oled_CallScl(this, Bit_SET);
+    Oled_CallSda(this, Bit_SET);
 
     Oled_CallSda(this, Bit_RESET);
     Oled_CallScl(this, Bit_RESET);
@@ -40,32 +44,41 @@ void Oled_I2c_Start(Oled *this)
 
 void Oled_I2c_Stop(Oled *this)
 {
+    Oled_CallScl(this, Bit_SET);
 
     Oled_CallSda(this, Bit_RESET);
-
     Oled_CallSda(this, Bit_SET);
+}
+
+void Oled_I2c_Wait(Oled *this)
+{
     Oled_CallScl(this, Bit_SET);
+    Oled_CallScl(this, Bit_RESET);
 }
 
 void Oled_I2c_SendByte(Oled *this, uint8_t Byte)
 {
 
     uint8_t i;
+    Oled_CallScl(this, Bit_RESET);
     for (i = 0; i < 8; i++) {
         Oled_CallSda(this, Byte & (0x80 >> i));
         Oled_CallScl(this, Bit_SET);
         Oled_CallScl(this, Bit_RESET);
     }
-    Oled_CallScl(this, Bit_SET);
-    Oled_CallScl(this, Bit_RESET);
+    // Oled_CallScl(this, Bit_SET);
+    // Oled_CallScl(this, Bit_RESET);
 }
 
 void Oled_WriteCommand(Oled *this, uint8_t Command)
 {
     Oled_I2c_Start(this);
     Oled_I2c_SendByte(this, 0x78);
+    Oled_I2c_Wait(this);
     Oled_I2c_SendByte(this, 0x00);
+    Oled_I2c_Wait(this);
     Oled_I2c_SendByte(this, Command);
+    Oled_I2c_Wait(this);
     Oled_I2c_Stop(this);
 }
 
@@ -73,8 +86,11 @@ void Oled_WriteData(Oled *this, uint8_t Data)
 {
     Oled_I2c_Start(this);
     Oled_I2c_SendByte(this, 0x78);
+    Oled_I2c_Wait(this);
     Oled_I2c_SendByte(this, 0x40);
+    Oled_I2c_Wait(this);
     Oled_I2c_SendByte(this, Data);
+    Oled_I2c_Wait(this);
     Oled_I2c_Stop(this);
 }
 
@@ -87,7 +103,7 @@ void Oled_WriteData(Oled *this, uint8_t Data)
  */
 void Oled_SetCursor(Oled *this, uint8_t X, uint8_t Y)
 {
-    Oled_WriteCommand(this, 0xB0 | Y); // 设置Y位置
+    Oled_WriteCommand(this, 0xB0 + Y); // 设置Y位置
 
     Oled_WriteCommand(this, 0x10 | ((X & 0xF0) >> 4)); // 设置X位置高4位
     Oled_WriteCommand(this, 0x00 | (X & 0x0F));        // 设置X位置低4位
@@ -102,41 +118,46 @@ void Oled_Init(
 {
     Oled_I2c_Init(this, RCC_APB2Periph, GPIOx, GPIO_Scl_Pin, GPIO_Sda_Pin);
 
+    Delay_ms(800);
+
     Oled_WriteCommand(this, 0xAE); // 关闭显示
+    Oled_WriteCommand(this, 0x00); // set low column address
+    Oled_WriteCommand(this, 0x10); // set high column address
 
-    Oled_WriteCommand(this, 0xD5); // 设置显示时钟分频比/振荡器频率
-    Oled_WriteCommand(this, 0x80);
+    Oled_WriteCommand(this, 0x40); // 设置显示开始行
+    Oled_WriteCommand(this, 0xB0); // set page address
 
+    Oled_WriteCommand(this, 0x81); // 设置对比度控制
+    Oled_WriteCommand(this, 0x60);
+
+    Oled_WriteCommand(this, 0xA1); // 设置左右方向，0xA1正常 0xA0左右反置
+    Oled_WriteCommand(this, 0xA6); // 设置正常/倒转显示
     Oled_WriteCommand(this, 0xA8); // 设置多路复用率
-    Oled_WriteCommand(this, 0x3F);
+    Oled_WriteCommand(this, 0x3F); // 1/32 duty
+    Oled_WriteCommand(this, 0xC8); // 设置上下方向，0xC8正常 0xC0上下反置
 
     Oled_WriteCommand(this, 0xD3); // 设置显示偏移
     Oled_WriteCommand(this, 0x00);
 
-    Oled_WriteCommand(this, 0x40); // 设置显示开始行
+    Oled_WriteCommand(this, 0xD5); // 设置显示时钟分频比/振荡器频率
+    Oled_WriteCommand(this, 0x80);
 
-    Oled_WriteCommand(this, 0xA1); // 设置左右方向，0xA1正常 0xA0左右反置
-
-    Oled_WriteCommand(this, 0xC8); // 设置上下方向，0xC8正常 0xC0上下反置
-
-    Oled_WriteCommand(this, 0xDA); // 设置COM引脚硬件配置
-    Oled_WriteCommand(this, 0x12);
-
-    Oled_WriteCommand(this, 0x81); // 设置对比度控制
-    Oled_WriteCommand(this, 0xCF);
+    Oled_WriteCommand(this, 0xD8); // set area color mode off
+    Oled_WriteCommand(this, 0x05);
 
     Oled_WriteCommand(this, 0xD9); // 设置预充电周期
     Oled_WriteCommand(this, 0xF1);
 
+    Oled_WriteCommand(this, 0xDA); // 设置COM引脚硬件配置
+    Oled_WriteCommand(this, 0x12);
+
     Oled_WriteCommand(this, 0xDB); // 设置VCOMH取消选择级别
     Oled_WriteCommand(this, 0x30);
 
-    Oled_WriteCommand(this, 0xA4); // 设置整个显示打开/关闭
-
-    Oled_WriteCommand(this, 0xA6); // 设置正常/倒转显示
-
     Oled_WriteCommand(this, 0x8D); // 设置充电泵
     Oled_WriteCommand(this, 0x14);
+
+    // Oled_WriteCommand(this, 0xA4); // 设置整个显示打开/关闭
 
     Oled_WriteCommand(this, 0xAF); // 开启显示
 
@@ -152,8 +173,6 @@ void Oled_Clear(Oled *this)
             Oled_WriteData(this, 0x00);
         }
     }
-
-    Oled_SetCursor(this, 0, 0);
 }
 
 /**
@@ -290,4 +309,18 @@ void Oled_DrawBMP(Oled *this, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, co
             Oled_WriteData(this, BMP[i++]);
         }
     }
+}
+
+void Oled_Display_On(Oled *this)
+{
+    Oled_WriteCommand(this, 0x8D);
+    Oled_WriteCommand(this, 0x14);
+    Oled_WriteCommand(this, 0xAF);
+}
+
+void Oled_Display_Off(Oled *this)
+{
+    Oled_WriteCommand(this, 0x8D);
+    Oled_WriteCommand(this, 0x10);
+    Oled_WriteCommand(this, 0xAE);
 }
