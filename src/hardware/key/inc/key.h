@@ -1,6 +1,6 @@
 #ifndef __KEY_H
 #define __KEY_H
-#include "gpio.h"
+#include "stm32f10x.h"
 
 typedef struct {
     uint32_t RCC_APB2Periph;
