@@ -35,7 +35,7 @@ void Led_Off(Led *this, uint16_t GPIO_Pin)
 
 void Led_Turn(Led *this, uint16_t GPIO_Pin)
 {
-    if (Led_isOn(this, GPIO_Pin) == 1) {
+    if (Led_IsOn(this, GPIO_Pin) == 1) {
         Led_Off(this, GPIO_Pin);
     } else {
         Led_On(this, GPIO_Pin);
@@ -56,7 +56,7 @@ void Led_Off_All(Led *this)
     }
 }
 
-uint8_t Led_isOn(Led *this, uint16_t GPIO_Pin)
+uint8_t Led_IsOn(Led *this, uint16_t GPIO_Pin)
 {
     if (GPIO_ReadOutputDataBit(this->GPIOx, GPIO_Pin) == 0) {
         return 1;

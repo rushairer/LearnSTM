@@ -9,6 +9,7 @@ typedef struct {
     uint16_t GPIO_Sda_Pin;
 } Oled;
 
+// TODO: 实现Buffer缓冲区的方式，全屏刷新
 void Oled_Init(
     Oled *this,
     uint32_t RCC_APB2Periph,

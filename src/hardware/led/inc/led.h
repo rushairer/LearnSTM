@@ -20,6 +20,6 @@ void Led_Turn(Led *this, uint16_t GPIO_Pin);
 void Led_On_All(Led *this);
 void Led_Off_All(Led *this);
 
-uint8_t Led_isOn(Led *this, uint16_t GPIO_Pin);
+uint8_t Led_IsOn(Led *this, uint16_t GPIO_Pin);
 
 #endif

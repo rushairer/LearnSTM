@@ -4,6 +4,10 @@
 #include "key.h"
 #include "oled.h"
 #include "oled_bmp.h"
+#include "light_sensor.h"
+#include "count_sensor.h"
+
+CountSensor countSensor;
 
 int main()
 {
@@ -26,21 +30,29 @@ int main()
     uint16_t oled_sda = GPIO_Pin_9;
     Oled_Init(&oled, RCC_APB2Periph_GPIOB, GPIOB, oled_scl, oled_sda);
 
-    // Oled_DrawBMP(&oled, 0, 0, 128, 16, OLED_BMP1);
+    LightSensor lightSensor;
+    uint16_t lightSensorPin = GPIO_Pin_13;
+    LightSensor_Init(&lightSensor, RCC_APB2Periph_GPIOB, GPIOB, lightSensorPin);
 
-    Oled_ShowNum(&oled, 2, 1, 379486, 6);
-    Oled_ShowSignedNum(&oled, 3, 1, -379486, 6);
-    Oled_ShowHexNum(&oled, 1, 1, 0xAA55, 4);
-    Oled_ShowBinNum(&oled, 4, 1, 0xAA55, 16);
-
-    // 测试水平滚动
-    // Oled_WriteCommand(&oled, 0x2F);
-    // Oled_WriteCommand(&oled, 0x26);
-    // Oled_ShowString(&oled, 4, 10, "6666666666666666666666666677777777777777778888888888888888888888");
+    uint16_t countSensorPin = GPIO_Pin_14;
+    CountSensor_Init(&countSensor, RCC_APB2Periph_GPIOB, GPIOB, GPIO_PortSourceGPIOB, countSensorPin, GPIO_PinSource14, EXTI_Line14);
+    Oled_ShowString(&oled, 2, 1, "Count:");
 
     // Oled_DrawBMP(&oled, 0, 0, 128, 16, OLED_BMP1);
-    Oled_DrawBMP(&oled, 0, 0, 128, 2, OLED_BMP2);
-    Oled_DrawBMP(&oled, 60, 1, 80, 4, googledino20x20_right);
+
+    // Oled_ShowNum(&oled, 2, 1, 379486, 6);
+    // Oled_ShowSignedNum(&oled, 3, 1, -379486, 6);
+    // Oled_ShowHexNum(&oled, 1, 1, 0xAA55, 4);
+    // Oled_ShowBinNum(&oled, 4, 1, 0xAA55, 16);
+
+    // // 测试水平滚动
+    // // Oled_WriteCommand(&oled, 0x2F);
+    // // Oled_WriteCommand(&oled, 0x26);
+    // // Oled_ShowString(&oled, 4, 10, "6666666666666666666666666677777777777777778888888888888888888888");
+
+    // // Oled_DrawBMP(&oled, 0, 0, 128, 16, OLED_BMP1);
+    // Oled_DrawBMP(&oled, 0, 0, 128, 2, OLED_BMP2);
+    // Oled_DrawBMP(&oled, 60, 1, 80, 4, googledino20x20_right);
     while (1) {
         // Oled_Clear(&oled);
         // Oled_ShowNum(&oled, 2, 1, 379486, 6);
@@ -63,26 +75,44 @@ int main()
         // Oled_DrawBMP(&oled, 60, 1, 80, 4, googledino20x20_right);
         // Delay_s(1);
 
-        if (Key_IsPressed(&key, key1) == 1) {
-            // Led_Turn(&led, led1);
-            Led_On_All(&led);
-            Oled_Display_On(&oled);
+        // if (Key_IsPressed(&key, key1) == 1) {
+        //     // Led_Turn(&led, led1);
+        //     Led_On_All(&led);
+        //     Oled_Display_On(&oled);
 
-            // if (Led_isOn(&led, led1) == 1) {
-            //     Oled_ShowString(&oled, 3, 10, "Das");
-            // } else {
-            //     Oled_ShowString(&oled, 3, 10, "   ");
-            // }
-        }
-        if (Key_IsPressed(&key, key2) == 1) {
-            // Led_Turn(&led, led2);
+        //     // if (Led_IsOn(&led, led1) == 1) {
+        //     //     Oled_ShowString(&oled, 3, 10, "Das");
+        //     // } else {
+        //     //     Oled_ShowString(&oled, 3, 10, "   ");
+        //     // }
+        // }
+        // if (Key_IsPressed(&key, key2) == 1) {
+        //     // Led_Turn(&led, led2);
+        //     Led_Off_All(&led);
+        //     Oled_Display_Off(&oled);
+        //     // if (Led_IsOn(&led, led2) == 1) {
+        //     //     Oled_ShowString(&oled, 3, 6, "Aben");
+        //     // } else {
+        //     //     Oled_ShowString(&oled, 3, 6, "    ");
+        //     // }
+        // }
+
+        if (LightSensor_IsOn(&lightSensor) == 1) {
+            Led_On_All(&led);
+            // Oled_Display_On(&oled);
+
+        } else {
             Led_Off_All(&led);
-            Oled_Display_Off(&oled);
-            // if (Led_isOn(&led, led2) == 1) {
-            //     Oled_ShowString(&oled, 3, 6, "Aben");
-            // } else {
-            //     Oled_ShowString(&oled, 3, 6, "    ");
-            // }
+            // Oled_Display_Off(&oled);
         }
+
+        Oled_ShowNum(&oled, 1, 1, LightSensor_IsOn(&lightSensor), 4);
+
+        Oled_ShowNum(&oled, 3, 7, countSensor.Count, 5);
     }
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+    CountSensor_IRQHandler(&countSensor);
 }
