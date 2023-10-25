@@ -6,6 +6,7 @@
 #include "oled_bmp.h"
 #include "light_sensor.h"
 #include "count_sensor.h"
+#include "driver_ssd1306_advance.h"
 
 CountSensor countSensor;
 
@@ -37,6 +38,20 @@ int main()
     uint16_t countSensorPin = GPIO_Pin_14;
     CountSensor_Init(&countSensor, RCC_APB2Periph_GPIOB, GPIOB, GPIO_PortSourceGPIOB, countSensorPin, GPIO_PinSource14, EXTI_Line14);
     Oled_ShowString(&oled, 2, 1, "Count:");
+
+    uint8_t res;
+    res = ssd1306_advance_init(SSD1306_INTERFACE_IIC, SSD1306_ADDR_SA0_0);
+
+    if (res != 0) {
+        return 1;
+    }
+    // res = ssd1306_advance_enable_zoom_in();
+    res = ssd1306_advance_string(0, 0, "123323", 3, 0, SSD1306_FONT_12);
+    res = ssd1306_advance_rect(10, 20, 30, 30, 1);
+
+    res = ssd1306_advance_fade_blinking(SSD1306_FADE_BLINKING_MODE_BLINKING, 0);
+    res = ssd1306_advance_vertical_left_horizontal_scroll(0, 7, 0, SSD1306_SCROLL_FRAME_2);
+    // res = ssd1306_advance_picture(0, 0, 127, 63, (uint8_t *)OLED_BMP2);
 
     // Oled_DrawBMP(&oled, 0, 0, 128, 16, OLED_BMP1);
 
@@ -106,9 +121,9 @@ int main()
             // Oled_Display_Off(&oled);
         }
 
-        Oled_ShowNum(&oled, 1, 1, LightSensor_IsOn(&lightSensor), 4);
+        // Oled_ShowNum(&oled, 1, 1, LightSensor_IsOn(&lightSensor), 4);
 
-        Oled_ShowNum(&oled, 3, 7, countSensor.Count, 5);
+        // Oled_ShowNum(&oled, 3, 7, countSensor.Count, 5);
     }
 }
 

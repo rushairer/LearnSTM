@@ -30,5 +30,9 @@ void Oled_ShowBinNum(Oled *this, uint8_t Line, uint8_t Column, uint32_t Number, 
 void Oled_DrawBMP(Oled *this, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[]);
 
 void Oled_WriteCommand(Oled *this, uint8_t Command);
+void Oled_I2c_SendByte(Oled *this, uint8_t Byte);
+void Oled_I2c_Start(Oled *this);
+void Oled_I2c_Stop(Oled *this);
+void Oled_I2c_Wait(Oled *this);
 
 #endif // !__OLED_H
