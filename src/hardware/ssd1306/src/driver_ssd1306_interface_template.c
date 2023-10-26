@@ -46,13 +46,13 @@
  * @note   none
  */
 
-Oled oled;
+Oled _oled;
 
 uint8_t ssd1306_interface_iic_init(void)
 {
     uint16_t oled_scl = GPIO_Pin_8;
     uint16_t oled_sda = GPIO_Pin_9;
-    Oled_Init(&oled, RCC_APB2Periph_GPIOB, GPIOB, oled_scl, oled_sda);
+    Oled_Init(&_oled, RCC_APB2Periph_GPIOB, GPIOB, oled_scl, oled_sda);
 
     return 0;
 }
@@ -83,16 +83,16 @@ uint8_t ssd1306_interface_iic_deinit(void)
  */
 uint8_t ssd1306_interface_iic_write(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len)
 {
-    Oled_I2c_Start(&oled);
-    Oled_I2c_SendByte(&oled, addr);
-    Oled_I2c_Wait(&oled);
-    Oled_I2c_SendByte(&oled, reg);
-    Oled_I2c_Wait(&oled);
+    Oled_I2c_Start(&_oled);
+    Oled_I2c_SendByte(&_oled, addr);
+    Oled_I2c_Wait(&_oled);
+    Oled_I2c_SendByte(&_oled, reg);
+    Oled_I2c_Wait(&_oled);
     for (uint16_t i = 0; i < len; i++) {
-        Oled_I2c_SendByte(&oled, buf[i]);
-        Oled_I2c_Wait(&oled);
+        Oled_I2c_SendByte(&_oled, buf[i]);
+        Oled_I2c_Wait(&_oled);
     }
-    Oled_I2c_Stop(&oled);
+    Oled_I2c_Stop(&_oled);
     return 0;
 }
 
