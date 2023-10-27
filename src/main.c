@@ -7,6 +7,9 @@
 #include "light_sensor.h"
 #include "count_sensor.h"
 #include "driver_ssd1306_advance.h"
+#include "rgb_led.h"
+#include <time.h>
+#include <stdlib.h>
 
 Led led;
 uint16_t led1 = GPIO_Pin_0;
@@ -25,6 +28,8 @@ uint16_t lightSensorPin = GPIO_Pin_13;
 
 CountSensor countSensor;
 uint16_t countSensorPin = GPIO_Pin_14;
+
+RgbLed rgbLed;
 
 void TestKey(void)
 {
@@ -61,8 +66,16 @@ void TestOled(void)
     Oled_DrawBMP(&oled, 60, 1, 80, 4, googledino20x20_right);
 }
 
+void TestRGBA()
+{
+    RgbLed_SetRGBColorValue(&rgbLed, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255);
+    Delay_s(1);
+}
+
 int main()
 {
+    srand(time(0));
+
     uint16_t leds[2] = {led1, led2};
     Led_Init(&led, RCC_APB2Periph_GPIOA, GPIOA, leds);
 
@@ -75,11 +88,41 @@ int main()
 
     CountSensor_Init(&countSensor, RCC_APB2Periph_GPIOB, GPIOB, GPIO_PortSourceGPIOB, countSensorPin, GPIO_PinSource14, EXTI_Line14);
 
+    // TIM3: PA6 PA7 PB0
+    RgbLed_Init(
+        &rgbLed,
+        TIM3,
+        RCC_APB1Periph_TIM3,
+        RCC_APB2Periph_GPIOA,
+        RCC_APB2Periph_GPIOA,
+        RCC_APB2Periph_GPIOB,
+        GPIOA,
+        GPIOA,
+        GPIOB,
+        GPIO_Pin_6,
+        GPIO_Pin_7,
+        GPIO_Pin_0);
+
     // TestSsd1306();
     TestOled();
 
     while (1) {
-        TestKey();
+        TestRGBA();
+        // TestRGBA();
+        //  TestKey();
+        //  for (i = 0; i <= 100; i++) {
+        //      Pwm_SetCompare1(&pwmR, i);
+        //      Pwm_SetCompare1(&pwmG, i);
+        //      Pwm_SetCompare1(&pwmB, i);
+        //      Delay_ms(10);
+        //  }
+        //  for (i = 0; i <= 100; i++) {
+        //      Pwm_SetCompare1(&pwmR, 100 - i);
+        //      Pwm_SetCompare1(&pwmG, 100 - i);
+        //      Pwm_SetCompare1(&pwmB, 100 - i);
+
+        //     Delay_ms(10);
+        // }
     }
 }
 
