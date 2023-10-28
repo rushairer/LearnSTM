@@ -6,7 +6,8 @@ void Servo_Init(
     uint32_t RCC_APB1Periph_TIMx,
     uint32_t RCC_APB2Periph,
     GPIO_TypeDef *GPIOx,
-    uint16_t GPIO_Pin)
+    uint16_t GPIO_Pin,
+    uint8_t CH)
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIMx, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph, ENABLE);
@@ -16,6 +17,7 @@ void Servo_Init(
     this->RCC_APB2Periph      = RCC_APB2Periph;
     this->GPIOx               = GPIOx;
     this->GPIO_Pin            = GPIO_Pin;
+    this->CH                  = CH;
 
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF_PP;
@@ -37,27 +39,39 @@ void Servo_Init(
     TIM_OCInitStructure.TIM_OCPolarity  = TIM_OCPolarity_High;
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     TIM_OCInitStructure.TIM_Pulse       = 0; // CCR
-    TIM_OC4Init(TIMx, &TIM_OCInitStructure);
 
+    switch (this->CH) {
+        case 1:
+            TIM_OC1Init(TIMx, &TIM_OCInitStructure);
+            break;
+        case 2:
+            TIM_OC2Init(TIMx, &TIM_OCInitStructure);
+            break;
+        case 3:
+            TIM_OC3Init(TIMx, &TIM_OCInitStructure);
+            break;
+        case 4:
+            TIM_OC4Init(TIMx, &TIM_OCInitStructure);
+            break;
+    }
     TIM_Cmd(TIMx, ENABLE);
 }
 
-void Servo_SetAngle_CH1(Servo *this, float Angle)
+void Servo_SetAngle(Servo *this, float Angle)
 {
-    TIM_SetCompare1(this->TIMx, Angle / 180 * 2000 + 500);
-}
-
-void Servo_SetAngle_CH2(Servo *this, float Angle)
-{
-    TIM_SetCompare2(this->TIMx, Angle / 180 * 2000 + 500);
-}
-
-void Servo_SetAngle_CH3(Servo *this, float Angle)
-{
-    TIM_SetCompare3(this->TIMx, Angle / 180 * 2000 + 500);
-}
-
-void Servo_SetAngle_CH4(Servo *this, float Angle)
-{
-    TIM_SetCompare4(this->TIMx, Angle / 180 * 2000 + 500);
+    float newAngle = Angle / 180 * 2000 + 500;
+    switch (this->CH) {
+        case 1:
+            TIM_SetCompare1(this->TIMx, newAngle);
+            break;
+        case 2:
+            TIM_SetCompare2(this->TIMx, newAngle);
+            break;
+        case 3:
+            TIM_SetCompare3(this->TIMx, newAngle);
+            break;
+        case 4:
+            TIM_SetCompare4(this->TIMx, newAngle);
+            break;
+    }
 }

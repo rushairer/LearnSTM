@@ -8,6 +8,7 @@ typedef struct {
     uint32_t RCC_APB2Periph;
     GPIO_TypeDef *GPIOx;
     uint16_t GPIO_Pin;
+    uint8_t CH;
 } Servo;
 
 void Servo_Init(
@@ -16,11 +17,9 @@ void Servo_Init(
     uint32_t RCC_APB1Periph_TIMx,
     uint32_t RCC_APB2Periph,
     GPIO_TypeDef *GPIOx,
-    uint16_t GPIO_Pin);
+    uint16_t GPIO_Pin,
+    uint8_t CH);
 
-void Servo_SetAngle_CH1(Servo *this, float Angle);
-void Servo_SetAngle_CH2(Servo *this, float Angle);
-void Servo_SetAngle_CH3(Servo *this, float Angle);
-void Servo_SetAngle_CH4(Servo *this, float Angle);
+void Servo_SetAngle(Servo *this, float Angle);
 
 #endif

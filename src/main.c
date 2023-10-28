@@ -32,7 +32,14 @@ uint16_t countSensorPin = GPIO_Pin_14;
 
 RgbLed rgbLed;
 
-Servo servo;
+Servo servo1;
+Servo servo2;
+Servo servo3;
+Servo servo4;
+Servo servo5;
+Servo servo6;
+Servo servo7;
+Servo servo8;
 
 void TestKey(void)
 {
@@ -107,12 +114,69 @@ int main()
     //     GPIO_Pin_0);
 
     Servo_Init(
-        &servo,
+        &servo1,
+        TIM3,
+        RCC_APB1Periph_TIM3,
+        RCC_APB2Periph_GPIOA,
+        GPIOA,
+        GPIO_Pin_6,
+        1);
+    Servo_Init(
+        &servo2,
+        TIM3,
+        RCC_APB1Periph_TIM3,
+        RCC_APB2Periph_GPIOA,
+        GPIOA,
+        GPIO_Pin_7,
+        2);
+    Servo_Init(
+        &servo3,
+        TIM3,
+        RCC_APB1Periph_TIM3,
+        RCC_APB2Periph_GPIOB,
+        GPIOB,
+        GPIO_Pin_0,
+        3);
+    Servo_Init(
+        &servo4,
+        TIM3,
+        RCC_APB1Periph_TIM3,
+        RCC_APB2Periph_GPIOB,
+        GPIOB,
+        GPIO_Pin_1,
+        4);
+    Servo_Init(
+        &servo5,
         TIM2,
         RCC_APB1Periph_TIM2,
         RCC_APB2Periph_GPIOA,
         GPIOA,
-        GPIO_Pin_3);
+        GPIO_Pin_0,
+        1);
+    Servo_Init(
+        &servo6,
+        TIM2,
+        RCC_APB1Periph_TIM2,
+        RCC_APB2Periph_GPIOA,
+        GPIOA,
+        GPIO_Pin_1,
+        2);
+    Servo_Init(
+        &servo7,
+        TIM2,
+        RCC_APB1Periph_TIM2,
+        RCC_APB2Periph_GPIOA,
+        GPIOA,
+        GPIO_Pin_2,
+        3);
+    Servo_Init(
+        &servo8,
+        TIM2,
+        RCC_APB1Periph_TIM2,
+        RCC_APB2Periph_GPIOA,
+        GPIOA,
+        GPIO_Pin_3,
+        4);
 
     // TestSsd1306();
     TestOled();
@@ -131,7 +195,18 @@ int main()
             angle = 0;
         }
 
-        Servo_SetAngle_CH4(&servo, angle);
+        // Servo_SetAngle_CH1(&servo, angle);
+        // Servo_SetAngle_CH2(&servo, angle);
+        // Servo_SetAngle_CH3(&servo, angle);
+        Servo_SetAngle(&servo1, angle);
+        Servo_SetAngle(&servo2, angle + 30);
+        Servo_SetAngle(&servo3, angle);
+        Servo_SetAngle(&servo4, angle + 30);
+        Servo_SetAngle(&servo5, angle);
+        Servo_SetAngle(&servo6, angle + 30);
+        Servo_SetAngle(&servo7, angle);
+        Servo_SetAngle(&servo8, angle + 30);
+
         Oled_ShowNum(&oled, 3, 12, angle, 3);
         // TestRGBA();
         //  TestKey();
