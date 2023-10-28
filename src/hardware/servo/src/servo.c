@@ -1,7 +1,7 @@
-#include "pwm.h"
+#include "servo.h"
 
-void Pwm_Init(
-    Pwm *this,
+void Servo_Init(
+    Servo *this,
     TIM_TypeDef *TIMx,
     uint32_t RCC_APB1Periph_TIMx,
     uint32_t RCC_APB2Periph,
@@ -37,22 +37,27 @@ void Pwm_Init(
     TIM_OCInitStructure.TIM_OCPolarity  = TIM_OCPolarity_High;
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     TIM_OCInitStructure.TIM_Pulse       = 0; // CCR
-    TIM_OC1Init(TIMx, &TIM_OCInitStructure);
+    TIM_OC4Init(TIMx, &TIM_OCInitStructure);
 
     TIM_Cmd(TIMx, ENABLE);
 }
 
-void Pwm_SetCompare1(Pwm *this, uint16_t Compare)
+void Servo_SetAngle_CH1(Servo *this, float Angle)
 {
-    TIM_SetCompare1(this->TIMx, Compare);
+    TIM_SetCompare1(this->TIMx, Angle / 180 * 2000 + 500);
 }
 
-void Pwm_SetCompare2(Pwm *this, uint16_t Compare)
+void Servo_SetAngle_CH2(Servo *this, float Angle)
 {
-    TIM_SetCompare2(this->TIMx, Compare);
+    TIM_SetCompare2(this->TIMx, Angle / 180 * 2000 + 500);
 }
 
-void Pwm_SetCompare3(Pwm *this, uint16_t Compare)
+void Servo_SetAngle_CH3(Servo *this, float Angle)
 {
-    TIM_SetCompare3(this->TIMx, Compare);
+    TIM_SetCompare3(this->TIMx, Angle / 180 * 2000 + 500);
+}
+
+void Servo_SetAngle_CH4(Servo *this, float Angle)
+{
+    TIM_SetCompare4(this->TIMx, Angle / 180 * 2000 + 500);
 }

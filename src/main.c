@@ -10,6 +10,7 @@
 #include "rgb_led.h"
 #include <time.h>
 #include <stdlib.h>
+#include "servo.h"
 
 Led led;
 uint16_t led1 = GPIO_Pin_0;
@@ -30,6 +31,8 @@ CountSensor countSensor;
 uint16_t countSensorPin = GPIO_Pin_14;
 
 RgbLed rgbLed;
+
+Servo servo;
 
 void TestKey(void)
 {
@@ -84,30 +87,52 @@ int main()
 
     Oled_Init(&oled, RCC_APB2Periph_GPIOB, GPIOB, oled_scl, oled_sda);
 
-    LightSensor_Init(&lightSensor, RCC_APB2Periph_GPIOB, GPIOB, lightSensorPin);
+    // LightSensor_Init(&lightSensor, RCC_APB2Periph_GPIOB, GPIOB, lightSensorPin);
 
-    CountSensor_Init(&countSensor, RCC_APB2Periph_GPIOB, GPIOB, GPIO_PortSourceGPIOB, countSensorPin, GPIO_PinSource14, EXTI_Line14);
+    // CountSensor_Init(&countSensor, RCC_APB2Periph_GPIOB, GPIOB, GPIO_PortSourceGPIOB, countSensorPin, GPIO_PinSource14, EXTI_Line14);
 
-    // TIM3: PA6 PA7 PB0
-    RgbLed_Init(
-        &rgbLed,
-        TIM3,
-        RCC_APB1Periph_TIM3,
+    // // TIM3: PA6 PA7 PB0
+    // RgbLed_Init(
+    //     &rgbLed,
+    //     TIM3,
+    //     RCC_APB1Periph_TIM3,
+    //     RCC_APB2Periph_GPIOA,
+    //     RCC_APB2Periph_GPIOA,
+    //     RCC_APB2Periph_GPIOB,
+    //     GPIOA,
+    //     GPIOA,
+    //     GPIOB,
+    //     GPIO_Pin_6,
+    //     GPIO_Pin_7,
+    //     GPIO_Pin_0);
+
+    Servo_Init(
+        &servo,
+        TIM2,
+        RCC_APB1Periph_TIM2,
         RCC_APB2Periph_GPIOA,
-        RCC_APB2Periph_GPIOA,
-        RCC_APB2Periph_GPIOB,
         GPIOA,
-        GPIOA,
-        GPIOB,
-        GPIO_Pin_6,
-        GPIO_Pin_7,
-        GPIO_Pin_0);
+        GPIO_Pin_3);
 
     // TestSsd1306();
     TestOled();
 
+    float angle = 0;
     while (1) {
-        TestRGBA();
+        // TestRGBA();
+        if (Key_IsPressed(&key, key1) == 1) {
+            angle += 30;
+            if (angle > 180) {
+                angle = 0;
+            }
+        }
+
+        if (Key_IsPressed(&key, key2) == 1) {
+            angle = 0;
+        }
+
+        Servo_SetAngle_CH4(&servo, angle);
+        Oled_ShowNum(&oled, 3, 12, angle, 3);
         // TestRGBA();
         //  TestKey();
         //  for (i = 0; i <= 100; i++) {
@@ -126,7 +151,7 @@ int main()
     }
 }
 
-void EXTI15_10_IRQHandler(void)
-{
-    CountSensor_IRQHandler(&countSensor);
-}
+// void EXTI15_10_IRQHandler(void)
+// {
+//     CountSensor_IRQHandler(&countSensor);
+// }

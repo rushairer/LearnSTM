@@ -1,5 +1,5 @@
-#ifndef __PWM_H
-#define __PWM_H
+#ifndef __SERVO_H
+#define __SERVO_H
 #include "stm32f10x.h"
 
 typedef struct {
@@ -8,18 +8,19 @@ typedef struct {
     uint32_t RCC_APB2Periph;
     GPIO_TypeDef *GPIOx;
     uint16_t GPIO_Pin;
-} Pwm;
+} Servo;
 
-void Pwm_Init(
-    Pwm *this,
+void Servo_Init(
+    Servo *this,
     TIM_TypeDef *TIMx,
     uint32_t RCC_APB1Periph_TIMx,
     uint32_t RCC_APB2Periph,
     GPIO_TypeDef *GPIOx,
     uint16_t GPIO_Pin);
 
-void Pwm_SetCompare1(Pwm *this, uint16_t Compare);
-void Pwm_SetCompare2(Pwm *this, uint16_t Compare);
-void Pwm_SetCompare3(Pwm *this, uint16_t Compare);
+void Servo_SetAngle_CH1(Servo *this, float Angle);
+void Servo_SetAngle_CH2(Servo *this, float Angle);
+void Servo_SetAngle_CH3(Servo *this, float Angle);
+void Servo_SetAngle_CH4(Servo *this, float Angle);
 
 #endif
