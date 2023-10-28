@@ -1,6 +1,7 @@
 #include "oled.h"
 #include "delay.h"
 #include "oled_font.h"
+#include <string.h>
 
 void Oled_CallScl(Oled *this, BitAction BitVal)
 {
@@ -109,6 +110,22 @@ void Oled_SetCursor(Oled *this, uint8_t X, uint8_t Y)
     Oled_WriteCommand(this, 0x00 | (X & 0x0F));        // 设置X位置低4位
 }
 
+void Oled_CleanBuffer(Oled *this)
+{
+    memset(this->Buffer, 0, sizeof(this->Buffer));
+}
+
+void Oled_RefreshScreen(Oled *this)
+{
+    uint8_t i, j;
+    for (i = 0; i < 8; i++) {
+        Oled_SetCursor(this, 0, i);
+        for (j = 0; j < 128; j++) {
+            Oled_WriteData(this, this->Buffer[i][j]);
+        }
+    }
+}
+
 void Oled_Init(
     Oled *this,
     uint32_t RCC_APB2Periph,
@@ -161,7 +178,9 @@ void Oled_Init(
 
     Oled_WriteCommand(this, 0xAF); // 开启显示
 
-    Oled_Clear(this);
+    // Oled_Clear(this);
+    Oled_CleanBuffer(this);
+    Oled_RefreshScreen(this);
 }
 
 void Oled_Clear(Oled *this)
@@ -171,6 +190,84 @@ void Oled_Clear(Oled *this)
         Oled_SetCursor(this, 0, j);
         for (i = 0; i < 128; i++) {
             Oled_WriteData(this, 0x00);
+        }
+    }
+}
+
+void Oled_SetPixel(Oled *this, uint8_t x, uint8_t y, uint8_t color)
+{
+    if (x >= 128 || y >= 64) {
+        return;
+    }
+
+    if (color) {
+        this->Buffer[y / 8][x] &= ~(1 << (y % 8));
+    } else {
+        this->Buffer[y / 8][x] |= 1 << (y % 8);
+    }
+}
+
+void Oled_SetByte(Oled *this, uint8_t Line, uint8_t Column, uint8_t data, uint8_t color)
+{
+    if (Line >= 8 || Column >= 128) {
+        return;
+    }
+
+    if (color) {
+        data = ~data;
+    }
+
+    this->Buffer[Line][Column] = data;
+}
+
+void Oled_DrawLine(Oled *this, uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color)
+{
+    static uint8_t temp = 0;
+    if (x1 == x2) {
+        if (y1 > y2) {
+            temp = y1;
+            y1   = y2;
+            y2   = temp;
+        }
+        for (uint8_t y = y1; y <= y2; y++) {
+            Oled_SetPixel(this, x1, y, color);
+        }
+    } else if (y1 == y2) {
+        if (x1 > x2) {
+            temp = x1;
+            x1   = x2;
+            x2   = temp;
+        }
+        for (uint8_t x = x1; x <= x2; x++) {
+            Oled_SetPixel(this, x, y1, color);
+        }
+    } else {
+        // Bresenham直线算法
+        int16_t dx = x2 - x1;
+        int16_t dy = y2 - y1;
+        int16_t ux = ((dx > 0) << 1) - 1;
+        int16_t uy = ((dy > 0) << 1) - 1;
+        int16_t x = x1, y = y1, eps = 0;
+        dx = abs(dx);
+        dy = abs(dy);
+        if (dx > dy) {
+            for (x = x1; x != x2; x += ux) {
+                Oled_SetPixel(this, x, y, color);
+                eps += dy;
+                if ((eps << 1) >= dx) {
+                    y += uy;
+                    eps -= dx;
+                }
+            }
+        } else {
+            for (y = y1; y != y2; y += uy) {
+                Oled_SetPixel(this, x, y, color);
+                eps += dx;
+                if ((eps << 1) >= dy) {
+                    x += ux;
+                    eps -= dy;
+                }
+            }
         }
     }
 }

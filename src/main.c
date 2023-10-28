@@ -74,6 +74,13 @@ void TestOled(void)
     Oled_ShowHexNum(&oled, 1, 1, 0xAA55, 4);
     Oled_ShowBinNum(&oled, 4, 1, 0xAA55, 16);
     Oled_DrawBMP(&oled, 60, 1, 80, 4, googledino20x20_right);
+
+    Oled_CleanBuffer(&oled);
+    Oled_RefreshScreen(&oled);
+
+    Oled_SetPixel(&oled, 64, 32, OLED_COLOR_NORMAL);
+    Oled_DrawLine(&oled, 0, 0, 127, 63, OLED_COLOR_NORMAL);
+    Oled_RefreshScreen(&oled);
 }
 
 void TestRGBA()
