@@ -118,11 +118,13 @@ void TestSerial()
 
     if (Serial_GetRxFlag(&serial) == 1) {
 
+        Oled_ShowString(&oled, 1, 1, "                      ");
+
         Serial_Printf(&serial, "\r\n<<<<<<<<<<<<<<<<<");
         Serial_SendString(&serial, (char *)serial.RxData);
         Serial_Printf(&serial, ">>>>>>>>>>>>>>>>>\r\n");
 
-        Oled_ShowString(&oled, 1, 8, (char *)serial.RxData);
+        Oled_ShowString(&oled, 1, 1, (char *)serial.RxData);
     }
 }
 

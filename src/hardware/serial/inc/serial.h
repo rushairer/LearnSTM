@@ -8,7 +8,7 @@ typedef struct {
     GPIO_TypeDef *GPIOx;
     uint16_t GPIO_Pin_Tx;
     uint16_t GPIO_Pin_Rx;
-    uint8_t RxData[4];
+    uint8_t RxData[128];
     uint8_t RxFlag;
 } Serial;
 

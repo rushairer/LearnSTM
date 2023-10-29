@@ -126,22 +126,25 @@ void Serial_IRQHandler(Serial *this)
         uint8_t RxData = USART_ReceiveData(USART1);
 
         if (RxState == 0) {
-            if (RxData == 0xFF) {
+            if (RxData == '@' && this->RxFlag == 0) {
                 RxState   = 1;
                 pRxPacket = 0;
             }
         } else if (RxState == 1) {
-            this->RxData[pRxPacket] = RxData;
-            pRxPacket++;
-            if (pRxPacket >= 4) {
+            if (RxData == '\r') {
                 RxState = 2;
+            } else {
+                this->RxData[pRxPacket] = RxData;
+                pRxPacket++;
             }
         } else if (RxState == 2) {
-            if (RxData == 0xFE) {
-                RxState      = 0;
-                this->RxFlag = 1;
+            if (RxData == '\n') {
+                RxState                 = 0;
+                this->RxData[pRxPacket] = '\0';
+                this->RxFlag            = 1;
             }
         }
+
         USART_ClearITPendingBit(USART1, USART_IT_RXNE);
     }
 }
