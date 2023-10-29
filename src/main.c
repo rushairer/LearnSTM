@@ -11,6 +11,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include "servo.h"
+#include "serial.h"
 
 Led led;
 uint16_t led1 = GPIO_Pin_0;
@@ -40,6 +41,8 @@ Servo servo5;
 Servo servo6;
 Servo servo7;
 Servo servo8;
+
+Serial serial;
 
 void TestKey(void)
 {
@@ -87,6 +90,40 @@ void TestRGBA()
 {
     RgbLed_SetRGBColorValue(&rgbLed, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255);
     Delay_s(1);
+}
+
+void TestSerial()
+{
+    // Serial_SendByte(&serial, 0x41);
+
+    // uint8_t MyArray[] = {0x42, 0x43, 0x44, 0x45};
+    // Serial_SendArray(&serial, MyArray, 4);
+
+    // Serial_SendString(&serial, "\r\nNum1=");
+
+    // Serial_SendNumber(&serial, 111, 3);
+
+    // printf("\r\nNum2=%d", 222);
+
+    // char String[100];
+    // sprintf(String, "\r\nNum3=%d", 333);
+    // Serial_SendString(&serial, String);
+
+    // Serial_Printf(&serial, "\r\nNum4=%d", 444);
+    // Serial_Printf(&serial, "\r\n");
+
+    // Serial_Printf(&serial, "\r\ndata:%d,%d,%d,%d,%d,%d", (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255);
+    // Serial_Printf(&serial, "\r\n");
+    // Delay_ms(100);
+
+    if (Serial_GetRxFlag(&serial) == 1) {
+
+        Serial_Printf(&serial, "\r\n<<<<<<<<<<<<<<<<<");
+        Serial_SendString(&serial, (char *)serial.RxData);
+        Serial_Printf(&serial, ">>>>>>>>>>>>>>>>>\r\n");
+
+        Oled_ShowString(&oled, 1, 8, (char *)serial.RxData);
+    }
 }
 
 int main()
@@ -185,12 +222,20 @@ int main()
         GPIO_Pin_3,
         4);
 
+    Serial_Init(
+        &serial,
+        RCC_APB2Periph_GPIOA,
+        GPIOA,
+        GPIO_Pin_9,
+        GPIO_Pin_10);
+
     // TestSsd1306();
     TestOled();
 
     float angle = 0;
     while (1) {
         // TestRGBA();
+        TestSerial();
         if (Key_IsPressed(&key, key1) == 1) {
             angle += 30;
             if (angle > 180) {
@@ -237,3 +282,8 @@ int main()
 // {
 //     CountSensor_IRQHandler(&countSensor);
 // }
+
+void USART1_IRQHandler(void)
+{
+    Serial_IRQHandler(&serial);
+}

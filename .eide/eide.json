@@ -29,7 +29,6 @@
         "hal/STM32F10x_StdPeriph_Driver/src/stm32f10x_dac.c",
         "hal/STM32F10x_StdPeriph_Driver/src/stm32f10x_dbgmcu.c",
         "hal/STM32F10x_StdPeriph_Driver/src/stm32f10x_dma.c",
-        "hal/STM32F10x_StdPeriph_Driver/src/stm32f10x_flash.c",
         "hal/STM32F10x_StdPeriph_Driver/src/stm32f10x_fsmc.c",
         "hal/STM32F10x_StdPeriph_Driver/src/stm32f10x_i2c.c",
         "hal/STM32F10x_StdPeriph_Driver/src/stm32f10x_iwdg.c",
@@ -95,6 +94,22 @@
           "proType": 1,
           "speed": 8000,
           "otherCmds": ""
+        },
+        "STLink": {
+          "bin": "",
+          "proType": "SWD",
+          "resetMode": "HWrst",
+          "runAfterProgram": true,
+          "speed": 4000,
+          "address": "0x08000000",
+          "elFile": "None",
+          "optionBytes": ".eide/debug.st.option.bytes.ini",
+          "otherCmds": ""
+        },
+        "Custom": {
+          "bin": "",
+          "commandLine": "",
+          "eraseChipCommand": ""
         }
       },
       "custom_dep": {
