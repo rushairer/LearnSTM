@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include "servo.h"
 #include "serial.h"
+#include "usart.h"
+#include "iap.h"
 
 Led led;
 uint16_t led1 = GPIO_Pin_0;
@@ -56,18 +58,18 @@ void TestKey(void)
     }
 }
 
-void TestSsd1306(void)
-{
-    uint8_t res;
-    res = ssd1306_advance_init(SSD1306_INTERFACE_IIC, SSD1306_ADDR_SA0_0);
-    // res = ssd1306_advance_enable_zoom_in();
-    res = ssd1306_advance_string(0, 0, "123323", 3, 0, SSD1306_FONT_12);
-    res = ssd1306_advance_rect(10, 20, 30, 30, 1);
+// void TestSsd1306(void)
+// {
+//     uint8_t res;
+//     res = ssd1306_advance_init(SSD1306_INTERFACE_IIC, SSD1306_ADDR_SA0_0);
+//     // res = ssd1306_advance_enable_zoom_in();
+//     res = ssd1306_advance_string(0, 0, "123323", 3, 0, SSD1306_FONT_12);
+//     res = ssd1306_advance_rect(10, 20, 30, 30, 1);
 
-    res = ssd1306_advance_fade_blinking(SSD1306_FADE_BLINKING_MODE_BLINKING, 0);
-    res = ssd1306_advance_vertical_left_horizontal_scroll(0, 7, 0, SSD1306_SCROLL_FRAME_2);
-    // res = ssd1306_advance_picture(0, 0, 127, 63, (uint8_t *)OLED_BMP2);
-}
+//     res = ssd1306_advance_fade_blinking(SSD1306_FADE_BLINKING_MODE_BLINKING, 0);
+//     res = ssd1306_advance_vertical_left_horizontal_scroll(0, 7, 0, SSD1306_SCROLL_FRAME_2);
+//     // res = ssd1306_advance_picture(0, 0, 127, 63, (uint8_t *)OLED_BMP2);
+// }
 
 void TestOled(void)
 {
@@ -94,27 +96,27 @@ void TestRGBA()
 
 void TestSerial()
 {
-    // Serial_SendByte(&serial, 0x41);
+    Serial_SendByte(&serial, 0x41);
 
-    // uint8_t MyArray[] = {0x42, 0x43, 0x44, 0x45};
-    // Serial_SendArray(&serial, MyArray, 4);
+    uint8_t MyArray[] = {0x42, 0x43, 0x44, 0x45};
+    Serial_SendArray(&serial, MyArray, 4);
 
-    // Serial_SendString(&serial, "\r\nNum1=");
+    Serial_SendString(&serial, "\r\nNum1=");
 
-    // Serial_SendNumber(&serial, 111, 3);
+    Serial_SendNumber(&serial, 111, 3);
 
-    // printf("\r\nNum2=%d", 222);
+    printf("\r\nNum2=%d", 222);
 
-    // char String[100];
-    // sprintf(String, "\r\nNum3=%d", 333);
-    // Serial_SendString(&serial, String);
+    char String[100];
+    sprintf(String, "\r\nNum3=%d", 333);
+    Serial_SendString(&serial, String);
 
-    // Serial_Printf(&serial, "\r\nNum4=%d", 444);
-    // Serial_Printf(&serial, "\r\n");
+    Serial_Printf(&serial, "\r\nNum4=%d", 444);
+    Serial_Printf(&serial, "\r\n");
 
-    // Serial_Printf(&serial, "\r\ndata:%d,%d,%d,%d,%d,%d", (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255);
-    // Serial_Printf(&serial, "\r\n");
-    // Delay_ms(100);
+    Serial_Printf(&serial, "\r\ndata:%d,%d,%d,%d,%d,%d", (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255, (uint8_t)rand() % 255);
+    Serial_Printf(&serial, "\r\n");
+    Delay_ms(100);
 
     if (Serial_GetRxFlag(&serial) == 1) {
 
@@ -130,6 +132,13 @@ void TestSerial()
 
 int main()
 {
+    u16 times = 0;
+
+    IAP_Init();           // 程序进入之后首先执行iap初始化 将标志位清除
+    Delay_ms(200);        // 延时初始化
+    NVIC_Configuration(); // 设置NVIC中断分组2:2位抢占优先级，2位响应优先级
+    uart_init(115200);    // 串口初始化为9600
+
     srand(time(0));
 
     uint16_t leds[2] = {led1, led2};
@@ -236,6 +245,17 @@ int main()
 
     float angle = 0;
     while (1) {
+        if (USART_RX_STA & 0x80) {
+            USART_RX_STA = 0;
+            IAP_Handle(USART_RX_BUF);
+        } else {
+            times++;
+            if (times % 50 == 0) {
+                Led_Turn(&led, led2);
+            }
+            Delay_ms(100);
+        }
+
         // TestRGBA();
         TestSerial();
         if (Key_IsPressed(&key, key1) == 1) {
@@ -285,7 +305,7 @@ int main()
 //     CountSensor_IRQHandler(&countSensor);
 // }
 
-void USART1_IRQHandler(void)
-{
-    Serial_IRQHandler(&serial);
-}
+// void USART1_IRQHandler(void)
+// {
+//     Serial_IRQHandler(&serial);
+// }

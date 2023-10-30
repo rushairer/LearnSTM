@@ -2,6 +2,7 @@
 #include "delay.h"
 #include "oled_font.h"
 #include <string.h>
+#include <stdlib.h>
 
 void Oled_CallScl(Oled *this, BitAction BitVal)
 {
