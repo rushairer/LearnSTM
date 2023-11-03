@@ -6,7 +6,6 @@
 #include "oled_bmp.h"
 #include "light_sensor.h"
 #include "count_sensor.h"
-#include "driver_ssd1306_advance.h"
 #include "rgb_led.h"
 #include <time.h>
 #include <stdlib.h>
@@ -57,19 +56,6 @@ void TestKey(void)
         Oled_Display_Off(&oled);
     }
 }
-
-// void TestSsd1306(void)
-// {
-//     uint8_t res;
-//     res = ssd1306_advance_init(SSD1306_INTERFACE_IIC, SSD1306_ADDR_SA0_0);
-//     // res = ssd1306_advance_enable_zoom_in();
-//     res = ssd1306_advance_string(0, 0, "123323", 3, 0, SSD1306_FONT_12);
-//     res = ssd1306_advance_rect(10, 20, 30, 30, 1);
-
-//     res = ssd1306_advance_fade_blinking(SSD1306_FADE_BLINKING_MODE_BLINKING, 0);
-//     res = ssd1306_advance_vertical_left_horizontal_scroll(0, 7, 0, SSD1306_SCROLL_FRAME_2);
-//     // res = ssd1306_advance_picture(0, 0, 127, 63, (uint8_t *)OLED_BMP2);
-// }
 
 void TestOled(void)
 {

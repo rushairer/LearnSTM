@@ -1,6 +1,7 @@
 #ifndef __OLED_H
 #define __OLED_H
 #include "stm32f10x.h"
+#include "i2c.h"
 
 typedef enum {
     OLED_COLOR_NORMAL   = 0,
@@ -13,6 +14,7 @@ typedef struct {
     uint16_t GPIO_Scl_Pin;
     uint16_t GPIO_Sda_Pin;
     uint8_t Buffer[8][128];
+    I2c i2c;
 } Oled;
 
 void Oled_Init(
@@ -42,9 +44,5 @@ void Oled_ShowBinNum(Oled *this, uint8_t Line, uint8_t Column, uint32_t Number, 
 void Oled_DrawBMP(Oled *this, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, const uint8_t BMP[]);
 
 void Oled_WriteCommand(Oled *this, uint8_t Command);
-void Oled_I2c_SendByte(Oled *this, uint8_t Byte);
-void Oled_I2c_Start(Oled *this);
-void Oled_I2c_Stop(Oled *this);
-void Oled_I2c_Wait(Oled *this);
 
 #endif // !__OLED_H

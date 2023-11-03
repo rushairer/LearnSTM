@@ -4,96 +4,28 @@
 #include <string.h>
 #include <stdlib.h>
 
-void Oled_CallScl(Oled *this, BitAction BitVal)
-{
-    GPIO_WriteBit(this->GPIOx, this->GPIO_Scl_Pin, BitVal);
-}
-
-void Oled_CallSda(Oled *this, BitAction BitVal)
-{
-    GPIO_WriteBit(this->GPIOx, this->GPIO_Sda_Pin, BitVal);
-}
-
-void Oled_I2c_Init(
-    Oled *this,
-    uint32_t RCC_APB2Periph,
-    GPIO_TypeDef *GPIOx,
-    uint16_t GPIO_Scl_Pin,
-    uint16_t GPIO_Sda_Pin)
-{
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph, ENABLE);
-
-    this->RCC_APB2Periph = RCC_APB2Periph;
-    this->GPIOx          = GPIOx;
-    this->GPIO_Scl_Pin   = GPIO_Scl_Pin;
-    this->GPIO_Sda_Pin   = GPIO_Sda_Pin;
-    GPIO_InitTypeDef GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Pin   = GPIO_Scl_Pin | GPIO_Sda_Pin;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOx, &GPIO_InitStructure);
-    GPIO_SetBits(GPIOx, GPIO_Scl_Pin | GPIO_Sda_Pin);
-}
-
-void Oled_I2c_Start(Oled *this)
-{
-    Oled_CallScl(this, Bit_SET);
-    Oled_CallSda(this, Bit_SET);
-
-    Oled_CallSda(this, Bit_RESET);
-    Oled_CallScl(this, Bit_RESET);
-}
-
-void Oled_I2c_Stop(Oled *this)
-{
-    Oled_CallScl(this, Bit_SET);
-
-    Oled_CallSda(this, Bit_RESET);
-    Oled_CallSda(this, Bit_SET);
-}
-
-void Oled_I2c_Wait(Oled *this)
-{
-    Oled_CallScl(this, Bit_SET);
-    Oled_CallScl(this, Bit_RESET);
-}
-
-void Oled_I2c_SendByte(Oled *this, uint8_t Byte)
-{
-
-    uint8_t i;
-    Oled_CallScl(this, Bit_RESET);
-    for (i = 0; i < 8; i++) {
-        Oled_CallSda(this, Byte & (0x80 >> i));
-        Oled_CallScl(this, Bit_SET);
-        Oled_CallScl(this, Bit_RESET);
-    }
-    // Oled_CallScl(this, Bit_SET);
-    // Oled_CallScl(this, Bit_RESET);
-}
-
 void Oled_WriteCommand(Oled *this, uint8_t Command)
 {
-    Oled_I2c_Start(this);
-    Oled_I2c_SendByte(this, 0x78);
-    Oled_I2c_Wait(this);
-    Oled_I2c_SendByte(this, 0x00);
-    Oled_I2c_Wait(this);
-    Oled_I2c_SendByte(this, Command);
-    Oled_I2c_Wait(this);
-    Oled_I2c_Stop(this);
+    I2c_Start(&this->i2c);
+    I2c_SendByte(&this->i2c, 0x78);
+    I2c_Wait(&this->i2c);
+    I2c_SendByte(&this->i2c, 0x00);
+    I2c_Wait(&this->i2c);
+    I2c_SendByte(&this->i2c, Command);
+    I2c_Wait(&this->i2c);
+    I2c_Stop(&this->i2c);
 }
 
 void Oled_WriteData(Oled *this, uint8_t Data)
 {
-    Oled_I2c_Start(this);
-    Oled_I2c_SendByte(this, 0x78);
-    Oled_I2c_Wait(this);
-    Oled_I2c_SendByte(this, 0x40);
-    Oled_I2c_Wait(this);
-    Oled_I2c_SendByte(this, Data);
-    Oled_I2c_Wait(this);
-    Oled_I2c_Stop(this);
+    I2c_Start(&this->i2c);
+    I2c_SendByte(&this->i2c, 0x78);
+    I2c_Wait(&this->i2c);
+    I2c_SendByte(&this->i2c, 0x40);
+    I2c_Wait(&this->i2c);
+    I2c_SendByte(&this->i2c, Data);
+    I2c_Wait(&this->i2c);
+    I2c_Stop(&this->i2c);
 }
 
 /**
@@ -105,8 +37,7 @@ void Oled_WriteData(Oled *this, uint8_t Data)
  */
 void Oled_SetCursor(Oled *this, uint8_t X, uint8_t Y)
 {
-    Oled_WriteCommand(this, 0xB0 + Y); // 设置Y位置
-
+    Oled_WriteCommand(this, 0xB0 + Y);                 // 设置Y位置
     Oled_WriteCommand(this, 0x10 | ((X & 0xF0) >> 4)); // 设置X位置高4位
     Oled_WriteCommand(this, 0x00 | (X & 0x0F));        // 设置X位置低4位
 }
@@ -134,7 +65,12 @@ void Oled_Init(
     uint16_t GPIO_Scl_Pin,
     uint16_t GPIO_Sda_Pin)
 {
-    Oled_I2c_Init(this, RCC_APB2Periph, GPIOx, GPIO_Scl_Pin, GPIO_Sda_Pin);
+    I2c_Init(&this->i2c, RCC_APB2Periph, GPIOx, GPIO_Scl_Pin, GPIO_Sda_Pin);
+
+    this->RCC_APB2Periph = RCC_APB2Periph;
+    this->GPIOx          = GPIOx;
+    this->GPIO_Scl_Pin   = GPIO_Scl_Pin;
+    this->GPIO_Sda_Pin   = GPIO_Sda_Pin;
 
     Delay_ms(800);
 
